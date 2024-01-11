@@ -2,28 +2,31 @@ const express = require('express');
 
 const app = express();
 
-// 1er middleware qui enregistre "requête reçue" dans la console et passe l'exécution grâce à next
-app.use((req, res, next) => {
-    console.log('requête reçue');
-    next();
-});
-
-// 2ème middleware qui ajoute un code d'état 201 à la réponse et passe l'exécution
-app.use((req,res,next) => {
-    res.status(201);
-    next();
-})
-// méthode use avec une fonction qui reçoit la requête et la réponse 
-// et utilisation de l'objet réponse avec la méthode json pour renvoyer une réponse en json
-// 3ème middleware qui envoie la réponse JSON et passe l'exécution
-app.use((req, res, next) => {
-    res.json({message: 'Votre requête a bien été reçue'});
-    next();
-});
-
-// dernier middleware qui enregistre "Réponse envoyée avec succès" dans la console
-app.use((req, res) => {
-    console.log('Réponse envoyée avec succès')
-})
+// Création d'un middleware. 
+// On lui passe la méthode use avec les arguments req pour request, res pour response et next pour passer l'exécution
+// Mais aussi l'argument en string /api/stuff qui est la route pour laquelle on souhaite enregistrer cet élément middleware
+app.use('/api/stuff', (req, res, next) => {
+    //  Création d'un groupe d'articles avec le schéma de données spécifique requis par le front
+    const stuff = [
+      {
+        _id: 'oeihfzeoi',
+        title: 'Mon premier objet',
+        description: 'Les infos de mon premier objet',
+        imageUrl: 'https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg',
+        price: 4900,
+        userId: 'qsomihvqios',
+      },
+      {
+        _id: 'oeihfzeomoihi',
+        title: 'Mon deuxième objet',
+        description: 'Les infos de mon deuxième objet',
+        imageUrl: 'https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg',
+        price: 2900,
+        userId: 'qsomihvqios',
+      },
+    ];
+    //  Envoi de ces articles sour la forme de données JSON, avec un code 200 pour une demande réussie
+    res.status(200).json(stuff);
+  });
 
 module.exports = app;

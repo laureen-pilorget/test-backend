@@ -2,6 +2,18 @@ const express = require('express');
 
 const app = express();
 
+// Création d'un middleware général (pas de route précisée)
+// car appliqué à toutes les routes, toutes les requêtes envoyées à notre serveur
+app.use((req, res, next) => {
+    // Ajout de headers : pour dire qu'on peut accéder à l'API depuis n'importe quelle origine
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    // Autorisation d'utiliser certains headers sur l'objet requête
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
+    // Pour envoyer des requêtes avec les méthodes mentionnées (GET, POST, PUT, DELETE, PATCH et OPTIONS)
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    next();
+});
+
 // Création d'un middleware. 
 // On lui passe la méthode use avec les arguments req pour request, res pour response et next pour passer l'exécution
 // Mais aussi l'argument en string /api/stuff qui est la route pour laquelle on souhaite enregistrer cet élément middleware

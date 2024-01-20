@@ -1,18 +1,21 @@
 const express = require('express');
-
+// Middleware qui intercèpte toutes les requêtes qui ont un content-type JSON et mettent à disposition ce contenu sur l'objet requête dans req.body
+// intercepte toutes les requêtes qui ont un content-type JSON et nous mettent à disposition ce contenu sur l'objet requête dans req.body
 const app = express();
-
 const mongoose = require('mongoose');
 
+const Thing = require('./models/Thing');
+
+// 
 mongoose.connect('mongodb+srv://laureenpilo:h6n8LSoYZDSaFlYW@cluster0.apxtpog.mongodb.net',
   { useNewUrlParser: true,
     useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))
-  .catch((e) => console.log(e));
+  .catch(() => console.log('Connexion à MongoDB échouée !'));
 
-// Middleware qui intercèpte toutes les requêtes qui ont un content-type JSON et mettent à disposition ce contenu sur l'objet requête dans req.body
-// intercepte toutes les requêtes qui ont un content-type JSON et nous mettent à disposition ce contenu sur l'objet requête dans req.body
 app.use(express.json());
+
+
 
 // Création d'un middleware général (pas de route précisée) car appliqué à toutes les routes, toutes les requêtes envoyées à notre serveur
 app.use((req, res, next) => {
@@ -29,36 +32,37 @@ app.use((req, res, next) => {
 // 201 est le code pour création de ressource
 app.post('/api/stuff', (req, res, next) => {
   console.log(req.body);
-  res.status(201).json({
-    message: 'Objet créé'
+  delete req.body._id;
+  const thing = new Thing({
+    ...req.body
   });
+  thing.save()
+    .then(() => res.status(201).json({ message: 'Objet enregistré !'}))
+    .catch(error => res.status(400).json({ error }));
 });
+
+
+// Création du middleware pour retourner un objet avec la méthode get
+app.get('/api/stuff/:id', (req, res, next) => {
+  // utilisation du modèle mongoose Thing avec la méthode findOne 
+  // auquel on passe l'objet de comparaison : on veut que l'ID de l'objet en vente soit le même que le paramètre de requête 
+  Thing.findOne({_id: req.params.id})
+    // un promise 
+    .then(thing => res.status(200).json(thing))
+    // une erreur 404 pour objet non trouvé
+    .catch(error => res.status(404).json({ error }));
+});
+
 
 // Création d'un middleware. 
 // On lui passe la méthode get avec les arguments req pour request, res pour response et next pour passer l'exécution
 // Mais aussi l'argument en string /api/stuff qui est la route pour laquelle on souhaite enregistrer cet élément middleware
 app.get('/api/stuff', (req, res, next) => {
-  //  Création d'un groupe d'articles avec le schéma de données spécifique requis par le front
-  const stuff = [
-    {
-      _id: 'oeihfzeoi',
-      title: 'Mon premier objet',
-      description: 'Les infos de mon premier objet',
-      imageUrl: 'https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg',
-      price: 4900,
-      userId: 'qsomihvqios',
-    },
-    {
-      _id: 'oeihfzeomoihi',
-      title: 'Mon deuxième objet',
-      description: 'Les infos de mon deuxième objet',
-      imageUrl: 'https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg',
-      price: 2900,
-      userId: 'qsomihvqios',
-    },
-  ];
-  //  Envoi de ces articles sour la forme de données JSON, avec un code 200 pour une demande réussie
-  res.status(200).json(stuff);
+  // on lui demande renvoyer un tableau contenznt toutes les Things de la DB 
+  Thing.find()
+    // Et de nous retourner soit les éléments créés en json, soit une erreur 400
+    .then(things => res.status(200).json(things))
+    .catch(error => res.status(400).json({ error }));
 });
 
 module.exports = app;

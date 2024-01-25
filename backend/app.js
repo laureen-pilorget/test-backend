@@ -4,6 +4,7 @@ const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 const stuffRoutes = require('./routes/stuff');
+const userRoutes = require('./routes/user');
 
 // 
 mongoose.connect('mongodb+srv://laureenpilo:h6n8LSoYZDSaFlYW@cluster0.apxtpog.mongodb.net',
@@ -11,10 +12,6 @@ mongoose.connect('mongodb+srv://laureenpilo:h6n8LSoYZDSaFlYW@cluster0.apxtpog.mo
     useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
-
-  // Permet d'accéder au corps de la requête. Intercepte toutes les requêtes qui ont un content-type JSON 
-  // et nous met à disposition ce contenu sur l'objet requête dans req.body. L'ancienne version de ce middleware est le bodyParser
-app.use(express.json());
 
 // Création d'un middleware général (pas de route précisée) car appliqué à toutes les routes, toutes les requêtes envoyées à notre serveur
 app.use((req, res, next) => {
@@ -27,7 +24,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// Permet d'accéder au corps de la requête. Intercepte toutes les requêtes qui ont un content-type JSON 
+// et nous met à disposition ce contenu sur l'objet requête dans req.body. L'ancienne version de ce middleware est le bodyParser
+app.use(express.json());
+
 // Ici on remet le début de la route : '/api/stuff' et on dit que pour cette route là, on utilise le router stuffRoutes
 app.use('/api/stuff', stuffRoutes);
+app.use('/api/auth', userRoutes);
 
 module.exports = app;

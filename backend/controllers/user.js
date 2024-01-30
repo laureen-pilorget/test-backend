@@ -1,6 +1,7 @@
 const User = require('../models/User');
 // importation du package de cryptage de mots de passes
 const bcrypt = require ('bcrypt');
+const jwt = require('jsonwebtoken');
 
 exports.signup = (req, res, next) => {
     // Ici on hash le mot de passe.
@@ -40,7 +41,15 @@ exports.login = (req, res, next) => {
                     // Sinon on délivre un token
                     res.status(200).json({
                         userId: user._id,
-                        token: 'TOKEN'
+                        // utilisation de la méthode sign pour chiffrer un nouveau token
+                        token: jwt.sign(
+                            // cette méthode contient l'ID de l'utilisateur en tant que payload (données encod&es dans le token)
+                            { userId: user._id },
+                            // chaîne secrète de développement temporaire pour crypter le token
+                            'RANDOM_TOKEN_SECRET',
+                            // définition de la durée de validité du token
+                            { expiresIn: '24h' }
+                        )
                     });
                 }
             })
